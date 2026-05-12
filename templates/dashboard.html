@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ALT Relay Intelligence Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">ALT</div>
+            <div>
+                <h2>ALT Relay</h2>
+                <p>AI Grid Platform</p>
+            </div>
+        </div>
+
+        <button class="nav active" onclick="openTab('overview', this)">🏠 Обзор</button>
+        <button class="nav" onclick="openTab('stations', this)">🏭 Подстанции</button>
+        <button class="nav" onclick="openTab('scheme', this)">⚡ Схема РЗА</button>
+        <button class="nav" onclick="openTab('scada', this)">🔌 SCADA/API</button>
+        <button class="nav" onclick="openTab('ai', this)">🤖 AI-инженер</button>
+        <button class="nav" onclick="openTab('log', this)">📋 Журнал</button>
+
+        <div class="profile">
+            <span>Инженер РЗА</span>
+            <h3>Рахматула Санжар</h3>
+            <p>ALT University</p>
+        </div>
+    </aside>
+
+    <main class="main">
+
+        <header class="header">
+            <div>
+                <p class="label">DIPLOMA PROJECT / SMART GRID</p>
+                <h1>AI Relay Intelligence Platform</h1>
+                <span>Интеллектуальная система мониторинга подстанций, РЗА, SCADA и погодных рисков</span>
+            </div>
+            <div id="globalStatus" class="status normal">НОРМА</div>
+        </header>
+
+        <section id="overview" class="tab active-tab">
+
+            <div class="hero">
+                <div>
+                    <p>AI RELAY ASSISTANT KAZAKHSTAN</p>
+                    <h2>Цифровая надстройка над SCADA</h2>
+                    <span>Система анализирует нагрузку, погоду, аварии и формирует рекомендации инженеру РЗА.</span>
+                </div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <span>Ток линии</span>
+                    <h3 id="currentValue">520 A</h3>
+                    <p>норма</p>
+                </div>
+                <div class="metric">
+                    <span>LIVE нагрузка</span>
+                    <h3 id="loadValue">520 МВт</h3>
+                    <p id="loadText">стабильно</p>
+                </div>
+                <div class="metric">
+                    <span>Частота</span>
+                    <h3>50.0 Гц</h3>
+                    <p>баланс</p>
+                </div>
+                <div class="metric">
+                    <span>Температура T1</span>
+                    <h3 id="transformerTemp">64°C</h3>
+                    <p>норма</p>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h2>🌦 Погодный риск Алматы</h2>
+                    <p id="weatherTemp">Температура: загрузка...</p>
+                    <p id="weatherWind">Ветер: загрузка...</p>
+                    <div id="weatherRisk" class="info good">Анализ погодных условий...</div>
+                </div>
+
+                <div class="card">
+                    <h2>🤖 AI-рекомендация</h2>
+                    <div id="liveAiAlert" class="ai-box good">
+                        Система работает в штатном режиме. Аварийных признаков не обнаружено.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card big">
+                <div class="card-head">
+                    <h2>⚡ LIVE график нагрузки сети</h2>
+                    <span>обновление каждые 2 секунды</span>
+                </div>
+                <canvas id="loadChart"></canvas>
+            </div>
+
+            <div class="card">
+                <h2>Сценарии аварий</h2>
+                <button class="btn green" onclick="manualScenario('normal')">Норма</button>
+                <button class="btn orange" onclick="manualScenario('risk')">Риск</button>
+                <button class="btn red" onclick="manualScenario('alarm')">Авария</button>
+            </div>
+
+        </section>
+
+        <section id="stations" class="tab">
+            <div class="card">
+                <h2>Карта подстанций Казахстана</h2>
+
+                <div class="kaz-map">
+                    <div class="map-bg">KAZAKHSTAN</div>
+                    <button class="point alma" onclick="selectStation('Alma 500 кВ', 'Алматинский энергоузел', 'НОРМА')">Alma 500</button>
+                    <button class="point shu" onclick="selectStation('Shu 500 кВ', 'Жамбылская область', 'НОРМА')">Shu 500</button>
+                    <button class="point astana" onclick="selectStation('Астана 110/10 кВ', 'Городская сеть', 'РИСК')">Astana</button>
+                    <button class="point tengiz" onclick="selectStation('Tengiz 220 кВ', 'Атырауская область', 'МОДЕРНИЗАЦИЯ')">Tengiz</button>
+                    <button class="point shymkent" onclick="selectStation('Shymkent 110 кВ', 'Южная зона', 'НОРМА')">Shymkent</button>
+                </div>
+
+                <div id="stationInfo" class="ai-box">
+                    Выберите подстанцию на карте для просмотра данных.
+                </div>
+            </div>
+        </section>
+
+        <section id="scheme" class="tab">
+            <div class="card">
+                <h2>Интерактивная схема РЗА</h2>
+
+                <div class="scheme">
+                    <div class="node">ЛЭП<br><small>500 кВ</small></div>
+                    <div class="wire"></div>
+                    <div id="breaker" class="node">Q1<br><small>Выключатель</small></div>
+                    <div class="wire"></div>
+                    <div id="transformer" class="node">T1<br><small>Трансформатор</small></div>
+                    <div class="wire"></div>
+                    <div class="node">Шины<br><small>110 кВ</small></div>
+                    <div class="wire"></div>
+                    <div class="node">Нагрузка</div>
+                </div>
+
+                <div class="ai-box">
+                    При аварии система подсвечивает проблемный элемент и формирует рекомендацию для инженера.
+                </div>
+            </div>
+        </section>
+
+        <section id="scada" class="tab">
+            <div class="card">
+                <h2>SCADA / API Integration</h2>
+                <input id="serverUrl" placeholder="SCADA Server URL">
+                <input id="apiToken" placeholder="API Token">
+                <select id="protocol">
+                    <option>IEC 61850</option>
+                    <option>OPC UA</option>
+                    <option>Modbus TCP</option>
+                    <option>DNP3</option>
+                </select>
+                <button class="btn blue" onclick="connectScada()">Проверить подключение</button>
+                <div id="scadaResult" class="ai-box">Подключение не выполнено.</div>
+            </div>
+        </section>
+
+        <section id="ai" class="tab">
+            <div class="card">
+                <h2>AI-инженер РЗА</h2>
+                <div class="chat">
+                    <input id="question" placeholder="Например: что делать при перегреве трансформатора?">
+                    <button class="btn blue" onclick="askAI()">Спросить</button>
+                </div>
+                <div id="aiAnswer" class="ai-box">AI готов к анализу.</div>
+            </div>
+        </section>
+
+        <section id="log" class="tab">
+            <div class="card">
+                <h2>Журнал событий</h2>
+                <ul id="eventLog">
+                    <li>Система запущена. Режим: нормальный.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+function openTab(id, btn){
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active-tab"));
+    document.getElementById(id).classList.add("active-tab");
+
+    document.querySelectorAll(".nav").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+}
+
+function addLog(text){
+    const log = document.getElementById("eventLog");
+    const li = document.createElement("li");
+    li.textContent = new Date().toLocaleTimeString() + " — " + text;
+    log.prepend(li);
+}
+
+async function loadWeather(){
+    try{
+        const res = await fetch("/weather");
+        const data = await res.json();
+
+        const temp = data.current_weather.temperature;
+        const wind = data.current_weather.windspeed;
+
+        document.getElementById("weatherTemp").textContent = "Температура: " + temp + "°C";
+        document.getElementById("weatherWind").textContent = "Ветер: " + wind + " км/ч";
+
+        if(wind > 20){
+            document.getElementById("weatherRisk").textContent = "⚠ Высокая ветровая нагрузка на ЛЭП";
+            document.getElementById("weatherRisk").className = "info risk";
+        }else{
+            document.getElementById("weatherRisk").textContent = "✅ Погодные условия стабильны";
+            document.getElementById("weatherRisk").className = "info good";
+        }
+    }catch{
+        document.getElementById("weatherRisk").textContent = "Ошибка загрузки погоды";
+    }
+}
+
+function setStatus(type, value){
+    const badge = document.getElementById("globalStatus");
+    const load = document.getElementById("loadValue");
+    const ai = document.getElementById("liveAiAlert");
+    const transformer = document.getElementById("transformer");
+
+    transformer.classList.remove("danger");
+
+    if(type === "normal"){
+        badge.className = "status normal";
+        badge.textContent = "НОРМА";
+        load.textContent = value + " МВт";
+        load.style.color = "#00e5ff";
+        ai.className = "ai-box good";
+        ai.textContent = "✅ AI-мониторинг: параметры в допустимых пределах.";
+    }
+
+    if(type === "risk"){
+        badge.className = "status risk";
+        badge.textContent = "РИСК";
+        load.textContent = "РИСК";
+        load.style.color = "orange";
+        ai.className = "ai-box risk";
+        ai.textContent = "⚠ Повышенная нагрузка. Рекомендуется контролировать температуру трансформатора и подготовить резерв.";
+        addLog("Зафиксирован режим риска по нагрузке.");
+    }
+
+    if(type === "alarm"){
+        badge.className = "status alarm";
+        badge.textContent = "АВАРИЯ";
+        load.textContent = "АВАРИЯ";
+        load.style.color = "red";
+        ai.className = "ai-box alarm";
+        ai.textContent = "🚨 Критическая перегрузка. AI рекомендует снизить нагрузку, проверить Q1 и подготовить резервную линию.";
+        transformer.classList.add("danger");
+        addLog("Критическая перегрузка линии.");
+    }
+}
+
+function manualScenario(type){
+    if(type === "normal") setStatus("normal", 520);
+    if(type === "risk") setStatus("risk", 720);
+    if(type === "alarm") setStatus("alarm", 780);
+}
+
+function selectStation(name, region, status){
+    document.getElementById("stationInfo").textContent =
+        "Выбрана подстанция: " + name + ". Регион: " + region + ". Статус: " + status + ". Данные доступны в демонстрационном режиме.";
+    addLog("Выбрана подстанция " + name);
+}
+
+function connectScada(){
+    const protocol = document.getElementById("protocol").value;
+    document.getElementById("scadaResult").textContent =
+        "Демо-подключение выполнено через " + protocol + ". В промышленной версии потребуется защищённый канал, API Token и права доступа.";
+    addLog("SCADA/API подключение проверено.");
+}
+
+async function askAI(){
+    const question = document.getElementById("question").value;
+
+    const res = await fetch("/ai", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({question})
+    });
+
+    const data = await res.json();
+    document.getElementById("aiAnswer").textContent = data.answer;
+    addLog("AI-инженер обработал запрос.");
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    loadWeather();
+
+    const ctx = document.getElementById("loadChart");
+
+    let labels = ["1","2","3","4","5","6","7","8"];
+    let loadData = [420,480,530,610,650,680,590,500];
+
+    const chart = new Chart(ctx, {
+        type:"line",
+        data:{
+            labels,
+            datasets:[{
+                label:"LIVE нагрузка МВт",
+                data:loadData,
+                borderColor:"#00e5ff",
+                backgroundColor:"rgba(0,229,255,0.2)",
+                fill:true,
+                tension:0.4
+            }]
+        },
+        options:{
+            responsive:true,
+            animation:{duration:600},
+            plugins:{legend:{labels:{color:"white"}}},
+            scales:{
+                x:{ticks:{color:"white"}},
+                y:{ticks:{color:"white"}}
+            }
+        }
+    });
+
+    function update(){
+        const value = Math.floor(Math.random() * (780 - 420 + 1)) + 420;
+        const time = new Date().toLocaleTimeString();
+
+        labels.push(time);
+        loadData.push(value);
+
+        if(labels.length > 8){
+            labels.shift();
+            loadData.shift();
+        }
+
+        chart.update();
+
+        if(value > 760) setStatus("alarm", value);
+        else if(value > 700) setStatus("risk", value);
+        else setStatus("normal", value);
+    }
+
+    setInterval(update, 2500);
+});
+</script>
+
+</body>
+</html>
