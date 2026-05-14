@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>ALT Relay Intelligence Platform</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <meta charset="UTF-8">
+<title>ALT Relay Intelligence Platform</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
+
+   <button class="menu-btn" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
 <div class="app">
 
@@ -24,6 +33,7 @@
         <button class="nav" onclick="openTab('stations', this)">🏭 Подстанции</button>
         <button class="nav" onclick="openTab('scheme', this)">⚡ Схема РЗА</button>
         <button class="nav" onclick="openTab('scada', this)">🔌 SCADA/API</button>
+        <button class="nav" onclick="openTab('employees', this)">👥 Сотрудники</button>
         <button class="nav" onclick="openTab('ai', this)">🤖 AI-инженер</button>
         <button class="nav" onclick="openTab('log', this)">📋 Журнал</button>
 
@@ -50,8 +60,8 @@
             <div class="hero">
                 <div>
                     <p>AI RELAY ASSISTANT KAZAKHSTAN</p>
-                    <h2>Цифровая надстройка над SCADA</h2>
-                    <span>Система анализирует нагрузку, погоду, аварии и формирует рекомендации инженеру РЗА.</span>
+                    <h2>Интеллектуальный мониторинг РЗА и подстанций</h2>
+                    <span>AI-платформа для анализа аварийных режимов, нагрузки, погодных рисков и поддержки решений инженера РЗА.</span>
                 </div>
             </div>
 
@@ -81,10 +91,9 @@
             <div class="grid-2">
                 <div class="card">
                     <h2>🌦 Погодный риск Алматы</h2>
-                    <p id="weatherTemp">Температура: загрузка...</p>
-                    <p id="weatherWind">Ветер: загрузка...</p>
-                    <div id="weatherRisk" class="info good">Анализ погодных условий...</div>
-                </div>
+                   <p id="temp">Температура: загрузка...</p>
+<p id="wind">Ветер: загрузка...</p>
+<div id="weatherStatus" class="info good">Анализ погодных условий...</div>
 
                 <div class="card">
                     <h2>🤖 AI-рекомендация</h2>
@@ -101,13 +110,68 @@
                 </div>
                 <canvas id="loadChart"></canvas>
             </div>
+<div class="card">
+    <div class="card-head">
+        <h2>🚨 Последние события системы</h2>
+        <span>LIVE log</span>
+    </div>
 
+    <ul id="liveEvents" class="event-list">
+        <li>00:25 — Система запущена</li>
+        <li>00:26 — Проверка линии 500 кВ</li>
+        <li>00:27 — Мониторинг активен</li>
+    </ul>
+</div>
             <div class="card">
-                <h2>Сценарии аварий</h2>
-                <button class="btn green" onclick="manualScenario('normal')">Норма</button>
-                <button class="btn orange" onclick="manualScenario('risk')">Риск</button>
-                <button class="btn red" onclick="manualScenario('alarm')">Авария</button>
-            </div>
+    <h2>Сценарии системы</h2>
+
+    <table class="scenario-table">
+        <thead>
+            <tr>
+                <th>Сценарий</th>
+                <th>Состояние</th>
+                <th>Действие AI</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Нормальный режим</td>
+                <td style="color:#22c55e;">Стабильно</td>
+                <td>
+                    <button class="btn green"
+                        onclick="manualScenario('normal')">
+                        Запустить
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Перегрузка линии</td>
+                <td style="color:#f59e0b;">Риск</td>
+                <td>
+                    <button class="btn orange"
+                        onclick="manualScenario('risk')">
+                        Запустить
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Короткое замыкание</td>
+                <td style="color:#ef4444;">Авария</td>
+                <td>
+                    <button class="btn red"
+                        onclick="manualScenario('alarm')">
+                        Запустить
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="scenarioAiResult" class="ai-box good">
+    AI готов к анализу сценария.
+</div>
+</div>
 
         </section>
 
@@ -116,14 +180,15 @@
                 <h2>Карта подстанций Казахстана</h2>
 
                 <div class="kaz-map">
-                    <div class="map-bg">KAZAKHSTAN</div>
-                    <button class="point alma" onclick="selectStation('Alma 500 кВ', 'Алматинский энергоузел', 'НОРМА')">Alma 500</button>
-                    <button class="point shu" onclick="selectStation('Shu 500 кВ', 'Жамбылская область', 'НОРМА')">Shu 500</button>
-                    <button class="point astana" onclick="selectStation('Астана 110/10 кВ', 'Городская сеть', 'РИСК')">Astana</button>
-                    <button class="point tengiz" onclick="selectStation('Tengiz 220 кВ', 'Атырауская область', 'МОДЕРНИЗАЦИЯ')">Tengiz</button>
-                    <button class="point shymkent" onclick="selectStation('Shymkent 110 кВ', 'Южная зона', 'НОРМА')">Shymkent</button>
-                </div>
-
+    <div id="kazakhstanMap"></div>
+</div>
+<div class="station-buttons">
+    <button onclick="showStationInfo('alma')">ПС Алма 500</button>
+    <button onclick="showStationInfo('shu')">ПС Шу 500</button>
+    <button onclick="showStationInfo('karaganda')">ПС Караганда</button>
+    <button onclick="showStationInfo('astana')">ПС Астана</button>
+    <button onclick="showStationInfo('shymkent')">ПС Шымкент</button>
+</div>
                 <div id="stationInfo" class="ai-box">
                     Выберите подстанцию на карте для просмотра данных.
                 </div>
@@ -135,16 +200,64 @@
                 <h2>Интерактивная схема РЗА</h2>
 
                 <div class="scheme">
-                    <div class="node">ЛЭП<br><small>500 кВ</small></div>
-                    <div class="wire"></div>
-                    <div id="breaker" class="node">Q1<br><small>Выключатель</small></div>
-                    <div class="wire"></div>
-                    <div id="transformer" class="node">T1<br><small>Трансформатор</small></div>
-                    <div class="wire"></div>
-                    <div class="node">Шины<br><small>110 кВ</small></div>
-                    <div class="wire"></div>
-                    <div class="node">Нагрузка</div>
-                </div>
+
+    <div class="node" onclick="showDeviceInfo('line')">
+        ЛЭП<br><small>500 кВ</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('disconnect')">
+        QS1<br><small>Разъединитель</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('ct')">
+        ТТ<br><small>Трансформатор тока</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div id="breaker" class="node" onclick="showDeviceInfo('breaker')">
+        Q1<br><small>Выключатель</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('vt')">
+        ТН<br><small>Трансформатор напряжения</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div id="transformer" class="node" onclick="showDeviceInfo('transformer')">
+        T1<br><small>Силовой трансформатор</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('bus')">
+        Шины<br><small>110 кВ</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('feeder')">
+        Фидер<br><small>10 кВ</small>
+    </div>
+
+    <div class="wire"></div>
+
+    <div class="node" onclick="showDeviceInfo('load')">
+        Нагрузка
+    </div>
+
+</div>
+
+<div id="deviceInfo" class="ai-box">
+    Нажмите на элемент схемы для просмотра параметров.
+</div>
 
                 <div class="ai-box">
                     При аварии система подсвечивает проблемный элемент и формирует рекомендацию для инженера.
@@ -167,7 +280,43 @@
                 <div id="scadaResult" class="ai-box">Подключение не выполнено.</div>
             </div>
         </section>
+<section id="employees" class="tab">
+    <div class="card">
+        <h2>Управление сотрудниками подстанции</h2>
 
+        <div class="employee-form">
+            <input type="text" id="employeeName" placeholder="ФИО сотрудника">
+            <input type="text" id="employeeRole" placeholder="Должность">
+
+            <select id="employeeStatus">
+                <option>На смене</option>
+                <option>Активен</option>
+                <option>Отпуск</option>
+                <option>Недоступен</option>
+            </select>
+
+            <button onclick="addEmployee()">Добавить сотрудника</button>
+        </div>
+
+        <div id="employeeList" class="employee-list">
+
+            <div class="employee-card">
+                <h3>Аскар Нурланов</h3>
+                <p>Старший инженер РЗА</p>
+                <span class="status active">На смене</span>
+                <button onclick="this.parentElement.remove()">Удалить</button>
+            </div>
+
+            <div class="employee-card">
+                <h3>Ержан Толеубаев</h3>
+                <p>SCADA инженер</p>
+                <span class="status active">Активен</span>
+                <button onclick="this.parentElement.remove()">Удалить</button>
+            </div>
+
+        </div>
+    </div>
+</section>
         <section id="ai" class="tab">
             <div class="card">
                 <h2>AI-инженер РЗА</h2>
@@ -207,28 +356,7 @@ function addLog(text){
     log.prepend(li);
 }
 
-async function loadWeather(){
-    try{
-        const res = await fetch("/weather");
-        const data = await res.json();
 
-        const temp = data.current_weather.temperature;
-        const wind = data.current_weather.windspeed;
-
-        document.getElementById("weatherTemp").textContent = "Температура: " + temp + "°C";
-        document.getElementById("weatherWind").textContent = "Ветер: " + wind + " км/ч";
-
-        if(wind > 20){
-            document.getElementById("weatherRisk").textContent = "⚠ Высокая ветровая нагрузка на ЛЭП";
-            document.getElementById("weatherRisk").className = "info risk";
-        }else{
-            document.getElementById("weatherRisk").textContent = "✅ Погодные условия стабильны";
-            document.getElementById("weatherRisk").className = "info good";
-        }
-    }catch{
-        document.getElementById("weatherRisk").textContent = "Ошибка загрузки погоды";
-    }
-}
 
 function setStatus(type, value){
     const badge = document.getElementById("globalStatus");
@@ -269,10 +397,42 @@ function setStatus(type, value){
     }
 }
 
-function manualScenario(type){
-    if(type === "normal") setStatus("normal", 520);
-    if(type === "risk") setStatus("risk", 720);
-    if(type === "alarm") setStatus("alarm", 780);
+async function manualScenario(type){
+    let question = "";
+
+    if(type === "normal"){
+        setStatus("normal", 520);
+        question = "Нормальный режим работы подстанции. Дай краткую рекомендацию инженеру РЗА.";
+    }
+
+    if(type === "risk"){
+        setStatus("risk", 720);
+        question = "Перегрузка линии 720 МВт. Что должен проверить инженер РЗА?";
+    }
+
+    if(type === "alarm"){
+        setStatus("alarm", 780);
+        question = "Аварийный режим, короткое замыкание или критическая перегрузка. Какие действия нужны?";
+    }
+
+    const box = document.getElementById("scenarioAiResult");
+    box.className = type === "alarm" ? "ai-box alarm" : type === "risk" ? "ai-box risk" : "ai-box good";
+    box.textContent = "AI анализирует сценарий...";
+
+    try{
+        const res = await fetch("/ai", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({question})
+        });
+
+        const data = await res.json();
+        box.textContent = data.answer;
+        addLog("AI обработал сценарий: " + type);
+    }catch{
+        box.className = "ai-box alarm";
+        box.textContent = "AI недоступен. Проверьте backend /ai.";
+    }
 }
 
 function selectStation(name, region, status){
@@ -303,7 +463,7 @@ async function askAI(){
 }
 
 document.addEventListener("DOMContentLoaded", function(){
-    loadWeather();
+
 
     const ctx = document.getElementById("loadChart");
 
@@ -334,28 +494,137 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     });
 
-    function update(){
-        const value = Math.floor(Math.random() * (780 - 420 + 1)) + 420;
-        const time = new Date().toLocaleTimeString();
+function update(){
 
-        labels.push(time);
-        loadData.push(value);
+    const loadValue = Math.floor(Math.random() * (780 - 420 + 1)) + 420;
+    const currentValue = Math.floor(Math.random() * (650 - 480 + 1)) + 480;
+    const frequencyValue = (49.8 + Math.random() * 0.4).toFixed(2);
+    const tempValue = Math.floor(Math.random() * (85 - 55 + 1)) + 55;
 
-        if(labels.length > 8){
-            labels.shift();
-            loadData.shift();
-        }
+    const time = new Date().toLocaleTimeString();
 
-        chart.update();
+    labels.push(time);
+    loadData.push(loadValue);
 
-        if(value > 760) setStatus("alarm", value);
-        else if(value > 700) setStatus("risk", value);
-        else setStatus("normal", value);
+    if(labels.length > 8){
+        labels.shift();
+        loadData.shift();
     }
 
+    chart.update();
+
+    document.getElementById("loadValue").textContent =
+        loadValue + " МВт";
+
+    document.getElementById("currentValue").textContent =
+        currentValue + " A";
+
+    document.getElementById("transformerTemp").textContent =
+        tempValue + "°C";
+
+    document.querySelectorAll(".metric h3")[2].textContent =
+        frequencyValue + " Гц";
+
+    if(loadValue > 760 || tempValue > 80){
+        setStatus("alarm", loadValue);
+    }
+    else if(loadValue > 680 || tempValue > 70){
+        setStatus("risk", loadValue);
+    }
+    else{
+        setStatus("normal", loadValue);
+    }
+}
     setInterval(update, 2500);
+    const events = [
+    "⚡ Перегрузка линии 500 кВ",
+    "🌡 Рост температуры трансформатора T1",
+    "✅ Стабилизация частоты сети",
+    "🔌 Проверка SCADA канала",
+    "⚠ Повышение нагрузки на подстанции Алматы",
+    "🛡 Сработала резервная защита",
+    "📡 Обновление телеметрии",
+    "🚨 Кратковременный скачок напряжения"
+];
+
+function updateEvents() {
+    const eventList = document.getElementById("liveEvents");
+
+    const randomEvent =
+        new Date().toLocaleTimeString() + " — " +
+        events[Math.floor(Math.random() * events.length)];
+
+    const li = document.createElement("li");
+    li.textContent = randomEvent;
+
+    eventList.prepend(li);
+
+    if (eventList.children.length > 5) {
+        eventList.removeChild(eventList.lastChild);
+    }
+}
+
+setInterval(updateEvents, 5000);
+});
+function toggleSidebar(){
+    document.querySelector(".sidebar").classList.toggle("closed");
+    document.querySelector(".main").classList.toggle("wide");
+    document.querySelector(".menu-btn").classList.toggle("closed");
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+    try {
+        const response = await fetch("/weather");
+        const data = await response.json();
+
+        document.getElementById("temp").innerText =
+            "Температура: " + data.current_weather.temperature + "°C";
+
+        document.getElementById("wind").innerText =
+            "Ветер: " + data.current_weather.windspeed + " км/ч";
+
+        document.getElementById("weatherStatus").innerText =
+            data.current_weather.windspeed > 20
+                ? "⚠ Высокая ветровая нагрузка на линии"
+                : "✅ Погодные условия стабильны";
+
+    } catch (error) {
+        document.getElementById("weatherStatus").innerText =
+            "Ошибка загрузки погодных данных";
+    }
 });
 </script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
+
+<script>
+async function askAI() {
+    const question = document.getElementById("question").value;
+    const answerBox = document.getElementById("aiAnswer");
+
+    answerBox.innerText = "AI анализирует...";
+
+    try {
+        const res = await fetch("/ai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        const data = await res.json();
+        answerBox.innerText = data.answer;
+
+    } catch (error) {
+        answerBox.innerText = "Ошибка подключения AI";
+        console.log(error);
+    }
+}
+</script>
 </body>
 </html>
